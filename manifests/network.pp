@@ -56,6 +56,10 @@
 #   Supported values: 'ml2', 'n1kv'.
 #   Defaults to 'ml2'
 #
+# [*api_extensions_path*]
+#   (optional) Location containing any API extensions added by plugins
+#   Defaults to undef
+#
 class cloud::network(
   $verbose                    = true,
   $debug                      = true,
@@ -66,6 +70,7 @@ class cloud::network(
   $log_facility               = 'LOG_LOCAL0',
   $dhcp_lease_duration        = '120',
   $plugin                     = 'ml2',
+  $api_extensions_path        = undef,
 ) {
 
   # Disable twice logging if syslog is enabled
@@ -87,6 +92,11 @@ class cloud::network(
     }
     'n1kv': {
       $core_plugin = 'neutron.plugins.cisco.network_plugin.PluginV2'
+    }
+    'nuage': {
+      $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
+      # Is it better to hard code api_extensions_path or make the user set it?
+      $api_extensions_path = '/usr/lib/python2.7/site-packages/neutron/plugins/nuage/extensions/' 
     }
     default: {
       err "${plugin} plugin is not supported."
@@ -110,6 +120,7 @@ class cloud::network(
     log_dir                 => $log_dir,
     dhcp_lease_duration     => $dhcp_lease_duration,
     report_interval         => '30',
+    api_extensions_path     => $api_extensions_path,
   }
 
 }

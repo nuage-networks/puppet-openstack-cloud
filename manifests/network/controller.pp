@@ -159,41 +159,79 @@
 #   Note: if l3-ha is True, do not include l2population (not compatible in Juno).
 #   Defaults to ['linuxbridge', 'openvswitch','l2population']
 #
+# [*nuage_neutron_db_name*]
+#   (optional) Username of neutron database
+#
+# [*nuage_neutron_db_password*]
+#   (optional) Password of the database
+#
+# [*nuage_oscontroller_ip*]
+#   (optional) IP address of the OpenStack controller
+#
+# [*nuage_net_partition_name*]
+#   (optional) name of the network partition to use  
+#
+# [*nuage_vsd_ip*]
+#   (optional) IP address of VSD  
+#
+# [*nuage_vsd_username*]
+#   (optional) Username for logging into VSD
+#
+# [*nuage_vsd_password*]
+#   (optional) Password for VSD
+#
+# [*nuage_vsd_organization*]
+#   (optional) organization property for VSD
+#
+# [*nuage_base_uri_version*]
+#   (optional) Version of the Nuage API being used.
+# 
 class cloud::network::controller(
-  $neutron_db_host         = '127.0.0.1',
-  $neutron_db_user         = 'neutron',
-  $neutron_db_password     = 'neutronpassword',
-  $neutron_db_idle_timeout = 5000,
-  $ks_neutron_password     = 'neutronpassword',
-  $ks_keystone_admin_host  = '127.0.0.1',
-  $ks_keystone_admin_proto = 'http',
-  $ks_keystone_public_port = 5000,
-  $ks_neutron_public_port  = 9696,
-  $api_eth                 = '127.0.0.1',
-  $ks_admin_tenant         = 'admin',
-  $nova_url                = 'http://127.0.0.1:8774/v2',
-  $nova_admin_auth_url     = 'http://127.0.0.1:5000/v2.0',
-  $nova_admin_username     = 'nova',
-  $nova_admin_tenant_name  = 'services',
-  $nova_admin_password     = 'novapassword',
-  $nova_region_name        = 'RegionOne',
-  $manage_ext_network      = false,
-  $firewall_settings       = {},
-  $flat_networks           = ['public'],
-  $tenant_network_types    = ['gre'],
-  $type_drivers            = ['gre', 'vlan', 'flat'],
-  $provider_vlan_ranges    = ['physnet1:1000:2999'],
-  $plugin                  = 'ml2',
-  $mechanism_drivers       = ['linuxbridge', 'openvswitch','l2population'],
-  $l3_ha                   = false,
-  $router_distributed      = false,
+  $neutron_db_host           = '127.0.0.1',
+  $neutron_db_user           = 'neutron',
+  $neutron_db_password       = 'neutronpassword',
+  $neutron_db_idle_timeout   = 5000,
+  $ks_neutron_password       = 'neutronpassword',
+  $ks_keystone_admin_host    = '127.0.0.1',
+  $ks_keystone_admin_proto   = 'http',
+  $ks_keystone_public_port   = 5000,
+  $ks_neutron_public_port    = 9696,
+  $api_eth                   = '127.0.0.1',
+  $ks_admin_tenant           = 'admin',
+  $nova_url                  = 'http://127.0.0.1:8774/v2',
+  $nova_admin_auth_url       = 'http://127.0.0.1:5000/v2.0',
+  $nova_admin_username       = 'nova',
+  $nova_admin_tenant_name    = 'services',
+  $nova_admin_password       = 'novapassword',
+  $nova_region_name          = 'RegionOne',
+  $manage_ext_network        = false,
+  $firewall_settings         = {},
+  $flat_networks             = ['public'],
+  $tenant_network_types      = ['gre'],
+  $type_drivers              = ['gre', 'vlan', 'flat'],
+  $provider_vlan_ranges      = ['physnet1:1000:2999'],
+  $plugin                    = 'ml2',
+  $mechanism_drivers         = ['linuxbridge', 'openvswitch','l2population'],
+  $l3_ha                     = false,
+  $router_distributed        = false,
+  $api_extensions_path       = undef,
   # only needed by cisco n1kv plugin
-  $n1kv_vsm_ip             = '127.0.0.1',
-  $n1kv_vsm_password       = 'secrete',
-  $ks_keystone_admin_port  = 35357,
+  $n1kv_vsm_ip               = '127.0.0.1',
+  $n1kv_vsm_password         = 'secrete',
+  $ks_keystone_admin_port    = 35357,
   # only needed by ml2 plugin
-  $tunnel_id_ranges        = ['1:10000'],
-  $vni_ranges              = ['1:10000'],
+  $tunnel_id_ranges          = ['1:10000'],
+  $vni_ranges                = ['1:10000'],
+  # only needed by nuage
+  $nuage_neutron_db_name     = 'neutron',
+  $nuage_neutron_db_password = 'simple',
+  $nuage_OScontroller_ip     = '127.0.0.1',
+  $nuage_net_partition_name  = '',
+  $nuage_vsd_ip              = undef,
+  $nuage_vsd_username        = 'csproot',
+  $nuage_vsd_password        = 'csproot',
+  $nuage_vsd_organization    = '/me',
+  $nuage_base_uri_version    = undef
 ) {
 
   include 'cloud::network'
@@ -256,6 +294,22 @@ class cloud::network::controller(
         # TODO (EmilienM) not sure about this one:
         'database/connection':           value => "mysql://${neutron_db_user}:${neutron_db_password}@${neutron_db_host}/neutron";
       }
+    }
+
+    'nuage': {
+       $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
+       class { 'neutron::plugins::neutron_plugin_nuage' :
+         nuage_neutron_db_name        => $nuage_neutron_db_name,
+         nuage_neutron_db_password    => $nuage_neutron_db_password,
+         nuage_oscontroller_ip        => $nuage_os_controller_ip,
+         nuage_net_partition_name     => $nuage_net_partition_name,
+         nuage_vsd_ip                 => $nuage_vsd_ip,
+         nuage_vsd_username           => $nuage_vsd_username,
+         nuage_vsd_password           => $nuage_vsd_password,
+         nuage_vsd_organization       => $nuage_vsd_organization,
+         nuage_base_uri_version       => $nuage_base_uri_version
+      }
+      #TO-DO: Configure the VSC IP as the active controller in the file /etc/default/openvswitch
     }
 
     default: {

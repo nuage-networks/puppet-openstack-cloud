@@ -104,6 +104,14 @@
 #   (optional) Cinder endpoint type to use.
 #   Defaults to 'publicURL'
 #
+# [*neutron_ovs_bridge*]
+#   (optional) Name of the OVS bridge to which the VMs are connected.
+#   Defaults to 'br-int'
+#
+# [*security_group_api*]
+#   (optional) Defines if nova or neutron will provide the security groups
+#   Defaults to neutron
+#
 class cloud::compute(
   $nova_db_host             = '127.0.0.1',
   $nova_db_use_slave        = false,
@@ -125,7 +133,9 @@ class cloud::compute(
   $neutron_region_name      = 'RegionOne',
   $memcache_servers         = ['127.0.0.1:11211'],
   $availability_zone        = 'RegionOne',
-  $cinder_endpoint_type     = 'publicURL'
+  $cinder_endpoint_type     = 'publicURL',
+  $neutron_ovs_bridge       = 'br-int',
+  $security_group_api       = 'neutron'
 ) {
 
   if !defined(Resource['nova_config']) {
@@ -177,7 +187,9 @@ class cloud::compute(
       neutron_admin_password => $neutron_password,
       neutron_admin_auth_url => "${neutron_protocol}://${neutron_endpoint}:35357/v2.0",
       neutron_url            => "${neutron_protocol}://${neutron_endpoint}:9696",
-      neutron_region_name    => $neutron_region_name
+      neutron_region_name    => $neutron_region_name,
+      neutron_ovs_bridge     => $neutron_ovs_bridge,
+      security_group_api     => $security_group_api,
   }
 
   nova_config {
