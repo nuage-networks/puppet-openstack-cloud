@@ -225,9 +225,10 @@ class cloud::network::controller(
   # only needed by nuage
   $nuage_neutron_db_name     = 'neutron',
   $nuage_neutron_db_password = 'simple',
-  $nuage_OScontroller_ip     = '127.0.0.1',
+  $nuage_oscontroller_ip     = '127.0.0.1',
   $nuage_net_partition_name  = '',
   $nuage_vsd_ip              = undef,
+  $nuage_vsc_ip              = undef,
   $nuage_vsd_username        = 'csproot',
   $nuage_vsd_password        = 'csproot',
   $nuage_vsd_organization    = '/me',
@@ -309,7 +310,14 @@ class cloud::network::controller(
          nuage_vsd_organization       => $nuage_vsd_organization,
          nuage_base_uri_version       => $nuage_base_uri_version
       }
-      #TO-DO: Configure the VSC IP as the active controller in the file /etc/default/openvswitch
+      ini_setting { "openvswitch nuage controller":
+        ensure   => present,
+        path     => '/etc/default/openvswitch',
+        section  => '',
+        setting  => 'ACTIVE_CONTROLLER',
+        value   => $nuage_vsc_ip,
+      }
+
     }
 
     default: {
