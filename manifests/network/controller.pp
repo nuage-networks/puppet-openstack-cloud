@@ -254,7 +254,7 @@ class cloud::network::controller(
     l3_ha                 => $l3_ha,
     router_distributed    => $router_distributed,
   }
-
+  
   case $plugin {
     'ml2': {
       $core_plugin = 'neutron.plugins.ml2.plugin.Ml2Plugin'
@@ -291,10 +291,10 @@ class cloud::network::controller(
 
     'nuage': {
        $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
-       class { 'neutron::plugins::neutron_plugin_nuage' :
+       class { 'neutron::plugins::nuage' :
          nuage_neutron_db_name        => $neutron_db_user,
          nuage_neutron_db_password    => $neutron_db_password,
-         nuage_oscontroller_ip        => $nuage_os_controller_ip,
+         nuage_oscontroller_ip        => $nuage_oscontroller_ip,
          nuage_net_partition_name     => $nuage_net_partition_name,
          nuage_vsd_ip                 => $nuage_vsd_ip,
          nuage_vsd_username           => $nuage_vsd_username,
@@ -311,11 +311,10 @@ class cloud::network::controller(
       }
 
     }
-   # Commented out because of https://tickets.puppetlabs.com/browse/PUP-4428
-   # Not sure if it is an issue only with 4.0.0
-   # default: {
-   #   err "${plugin} plugin is not supported."
-   # }
+   
+    default: {
+      err "${plugin} plugin is not supported."
+    }
   }
 
   class { 'neutron::server::notifications':

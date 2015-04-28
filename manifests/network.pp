@@ -85,7 +85,7 @@ class cloud::network(
   } else {
     $log_dir = '/var/log/neutron'
   }
-
+  
   case $plugin {
     'ml2': {
       $core_plugin = 'neutron.plugins.ml2.plugin.Ml2Plugin'
@@ -96,11 +96,10 @@ class cloud::network(
     'nuage': {
       $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
     }
-    # https://tickets.puppetlabs.com/browse/PUP-4428
-    # Not sure if this problem arises only with 4.0.0
-    #default: {
-    #  err "${plugin} plugin is not supported."
-    #}
+    
+    default: {
+      err "${plugin} plugin is not supported."
+    }
   }
 
   class { 'neutron':

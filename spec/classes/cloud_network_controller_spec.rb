@@ -48,7 +48,7 @@ describe 'cloud::network::controller' do
         :nova_admin_password      => 'novapassword',
         :nova_region_name         => 'RegionOne',
         :manage_ext_network       => false,
-        :api_eth                  => '10.0.0.1' }
+        :api_eth                  => '10.0.0.1'}
     end
 
     it 'configure neutron common' do
@@ -227,6 +227,45 @@ describe 'cloud::network::controller' do
       end
       it_raises 'a Puppet::Error', /l3_ha does not work with l2population mechanism driver in Juno./
     end
+
+    context 'if Nuage is the core plugin' do
+    
+      let :pre_condition do
+        "class { 'cloud::network':
+          rabbit_hosts             => ['10.0.0.1'],
+          rabbit_password          => 'secrete',
+          api_eth                  => '10.0.0.1',
+          verbose                  => true,
+          debug                    => true,
+          use_syslog               => true,
+          dhcp_lease_duration      => '10',
+          log_facility             => 'LOG_LOCAL0',
+          plugin                   => 'nuage' }"
+      end
+ 
+      before :each do
+        params.merge!(:plugin              => 'nuage',
+  		      :nuage_oscontroller_ip    => '10.10.10.10',
+  		      :nuage_net_partition_name => 'test',
+		      :nuage_vsd_ip             => '10.10.10.11',
+		      :nuage_vsd_username       => 'nuage',
+		      :nuage_vsd_password       => 'nuage',
+		      :nuage_vsd_organization   => '/temp',
+		      :nuage_base_uri_version   => 'v3')
+      end
+      it 'contains correct parameters' do
+        is_expected.to contain_class('neutron::plugins::nuage').with(
+        :nuage_oscontroller_ip    => '10.10.10.10', 
+        :nuage_net_partition_name => 'test',
+        :nuage_vsd_ip             => '10.10.10.11',
+        :nuage_vsd_username       => 'nuage',
+        :nuage_vsd_password       => 'nuage',
+        :nuage_vsd_organization   => '/temp',
+        :nuage_base_uri_version   => 'v3'
+      )
+      end
+    end
+
   end
 
   context 'on Debian platforms' do
@@ -246,30 +285,15 @@ describe 'cloud::network::controller' do
 
     it_configures 'openstack network controller'
   end
-
-  context 'if Nuage is the core plugin' do
-    before :each do
-      params.merge!(:core_plugin              => 'nuage',
-		    :nuage_oscontroller_ip    => '10.10.10.10',
-		    :nuage_net_partition_name => 'test',
-		    :nuage_vsd_ip             => '10.10.10.11',
-		    :nuage_vsd_username       => 'nuage',
-		    :nuage_vsd_password       => 'nuage',
-		    :nuage_vsd_organization   => '/temp',
-		    :nuage_base_uri_version   => 'v3')
-    end
-    it 'contains correct parameters' do
-      is_expected.to contain_class('neutron::plugins::nuage').with(
-      :core_plugin              => 'nuage',
-      :nuage_oscontroller_ip    => '10.10.10.10', 
-      :nuage_net_partition_name => 'test',
-      :nuage_vsd_ip             => '10.10.10.11',
-      :nuage_vsd_username       => 'nuage',
-      :nuage_vsd_password       => 'nuage',
-      :nuage_vsd_organization   => '/temp',
-      :nuage_base_uri_version   => 'v3'
-    )
-    end
+ 
+  let :params do {
+	:plugin => 'nuage'
+  }
   end
+  let :facts do {
+	  :osfamily => 'RedHat'
+  }
+  end
+
 
 end
