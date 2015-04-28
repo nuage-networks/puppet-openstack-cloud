@@ -95,12 +95,12 @@ class cloud::network(
     }
     'nuage': {
       $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
-      # Is it better to hard code api_extensions_path or make the user set it?
-      $api_extensions_path = '/usr/lib/python2.7/site-packages/neutron/plugins/nuage/extensions/' 
     }
-    default: {
-      err "${plugin} plugin is not supported."
-    }
+    # https://tickets.puppetlabs.com/browse/PUP-4428
+    # Not sure if this problem arises only with 4.0.0
+    #default: {
+    #  err "${plugin} plugin is not supported."
+    #}
   }
 
   class { 'neutron':

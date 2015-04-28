@@ -247,4 +247,29 @@ describe 'cloud::network::controller' do
     it_configures 'openstack network controller'
   end
 
+  context 'if Nuage is the core plugin' do
+    before :each do
+      params.merge!(:core_plugin              => 'nuage',
+		    :nuage_oscontroller_ip    => '10.10.10.10',
+		    :nuage_net_partition_name => 'test',
+		    :nuage_vsd_ip             => '10.10.10.11',
+		    :nuage_vsd_username       => 'nuage',
+		    :nuage_vsd_password       => 'nuage',
+		    :nuage_vsd_organization   => '/temp',
+		    :nuage_base_uri_version   => 'v3')
+    end
+    it 'contains correct parameters' do
+      is_expected.to contain_class('neutron::plugins::nuage').with(
+      :core_plugin              => 'nuage',
+      :nuage_oscontroller_ip    => '10.10.10.10', 
+      :nuage_net_partition_name => 'test',
+      :nuage_vsd_ip             => '10.10.10.11',
+      :nuage_vsd_username       => 'nuage',
+      :nuage_vsd_password       => 'nuage',
+      :nuage_vsd_organization   => '/temp',
+      :nuage_base_uri_version   => 'v3'
+    )
+    end
+  end
+
 end

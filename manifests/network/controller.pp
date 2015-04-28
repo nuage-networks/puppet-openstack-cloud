@@ -159,12 +159,6 @@
 #   Note: if l3-ha is True, do not include l2population (not compatible in Juno).
 #   Defaults to ['linuxbridge', 'openvswitch','l2population']
 #
-# [*nuage_neutron_db_name*]
-#   (optional) Username of neutron database
-#
-# [*nuage_neutron_db_password*]
-#   (optional) Password of the database
-#
 # [*nuage_oscontroller_ip*]
 #   (optional) IP address of the OpenStack controller
 #
@@ -223,8 +217,6 @@ class cloud::network::controller(
   $tunnel_id_ranges          = ['1:10000'],
   $vni_ranges                = ['1:10000'],
   # only needed by nuage
-  $nuage_neutron_db_name     = 'neutron',
-  $nuage_neutron_db_password = 'simple',
   $nuage_oscontroller_ip     = '127.0.0.1',
   $nuage_net_partition_name  = '',
   $nuage_vsd_ip              = undef,
@@ -300,8 +292,8 @@ class cloud::network::controller(
     'nuage': {
        $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
        class { 'neutron::plugins::neutron_plugin_nuage' :
-         nuage_neutron_db_name        => $nuage_neutron_db_name,
-         nuage_neutron_db_password    => $nuage_neutron_db_password,
+         nuage_neutron_db_name        => $neutron_db_user,
+         nuage_neutron_db_password    => $neutron_db_password,
          nuage_oscontroller_ip        => $nuage_os_controller_ip,
          nuage_net_partition_name     => $nuage_net_partition_name,
          nuage_vsd_ip                 => $nuage_vsd_ip,
@@ -319,10 +311,11 @@ class cloud::network::controller(
       }
 
     }
-
-    default: {
-      err "${plugin} plugin is not supported."
-    }
+   # Commented out because of https://tickets.puppetlabs.com/browse/PUP-4428
+   # Not sure if it is an issue only with 4.0.0
+   # default: {
+   #   err "${plugin} plugin is not supported."
+   # }
   }
 
   class { 'neutron::server::notifications':
