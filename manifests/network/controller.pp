@@ -302,14 +302,12 @@ class cloud::network::controller(
          nuage_vsd_organization       => $nuage_vsd_organization,
          nuage_base_uri_version       => $nuage_base_uri_version
       }
-      ini_setting { "openvswitch nuage controller":
-        ensure   => present,
-        path     => '/etc/default/openvswitch',
-        section  => '',
-        setting  => 'ACTIVE_CONTROLLER',
-        value   => $nuage_vsc_ip,
+      file_line { 'openvswitch controller ip address':
+        ensure      => present,
+        line        => 'ACTIVE_CONTROLLER=$nuage_vsp_ip',
+        match       => "ACTIVE_CONTROLLER=",
+        path        => '/etc/default/openvswitch',
       }
-
     }
    
     default: {
