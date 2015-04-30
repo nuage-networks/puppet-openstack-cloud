@@ -292,8 +292,6 @@ class cloud::network::controller(
     'nuage': {
        $core_plugin = 'neutron.plugins.nuage.plugin.NuagePlugin'
        class { 'neutron::plugins::nuage' :
-         nuage_neutron_db_name        => $neutron_db_user,
-         nuage_neutron_db_password    => $neutron_db_password,
          nuage_oscontroller_ip        => $nuage_oscontroller_ip,
          nuage_net_partition_name     => $nuage_net_partition_name,
          nuage_vsd_ip                 => $nuage_vsd_ip,
@@ -302,12 +300,13 @@ class cloud::network::controller(
          nuage_vsd_organization       => $nuage_vsd_organization,
          nuage_base_uri_version       => $nuage_base_uri_version
       }
-      file_line { 'openvswitch controller ip address':
-        ensure      => present,
-        line        => 'ACTIVE_CONTROLLER=$nuage_vsp_ip',
-        match       => "ACTIVE_CONTROLLER=",
-        path        => '/etc/default/openvswitch',
-      }
+      # This needs to be moved to the client. Belongs on computes not the controllers.
+      #file_line { 'openvswitch controller ip address':
+      #  ensure      => present,
+      #  line        => 'ACTIVE_CONTROLLER=$nuage_vsp_ip',
+      #  match       => "ACTIVE_CONTROLLER=",
+      #  path        => '/etc/default/openvswitch',
+      #}
     }
    
     default: {
