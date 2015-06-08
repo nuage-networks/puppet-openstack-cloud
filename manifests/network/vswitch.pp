@@ -19,7 +19,7 @@
 #
 # [*driver*]
 #   (optional) Neutron vswitch driver
-#   Supported values: 'ml2_ovs', 'ml2_lb', 'n1kv_vem'.
+#   Supported values: 'ml2_ovs', 'ml2_lb', 'n1kv_vem', 'nuage'.
 #   Note: 'n1kv_vem' currently works only on Red Hat systems.
 #   Defaults to 'ml2_ovs'
 #
@@ -138,6 +138,12 @@
 #   Should be an hash.
 #   Default to {}
 #
+# [*nuage_active_controller*]
+#   IP address of the active controller (VSC)
+#
+# [*nuage_backup_controller*]
+#   IP address of the backup controller (VSC)
+#
 class cloud::network::vswitch(
   # common
   $driver                     = 'ml2_ovs',
@@ -161,6 +167,9 @@ class cloud::network::vswitch(
   $vteps_in_same_subnet       = false,
   $n1kv_source                = '',
   $n1kv_version               = 'present',
+  # nuage
+  $nuage_active_controller    = undef,
+  $nuage_backup_controller    = undef,
 ) {
 
   include 'cloud::network'
@@ -212,6 +221,13 @@ class cloud::network::vswitch(
       ensure_resource('package', 'nexus1000v', {
         ensure => present
       })
+    }
+
+    'nuage': {
+       class { 'neutron::agents::nuage':
+         active_controller  => $nuage_active_controller,
+         backup_controller  => $nuage_backup_controller,
+       }
     }
 
     default: {
