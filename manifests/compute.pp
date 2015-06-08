@@ -136,12 +136,6 @@ class cloud::compute(
   $cinder_endpoint_type     = 'publicURL',
   $neutron_ovs_bridge       = 'br-int',
   $security_group_api       = 'neutron',
-#Added for nuage-metadata-agent
-  $service_neutron_metadata_proxy = 'True',
-  $use_forwarded_for        = 'True',
-  $neutron_metadata_proxy_shared_secret = 'NuageNetworksSharedSecret',
-# Can we make this value optional (instance_name_template)?
-  $instance_name_template   = 'inst-%08x'
 ) {
 
   if !defined(Resource['nova_config']) {
@@ -150,15 +144,6 @@ class cloud::compute(
     }
   }
 
-  if $service_neutron_metadata_proxy {
-
-    nova_config {
-      'DEFAULT/service_neutron_metadata_proxy': value => $service_neutron_metadata_proxy;
-      'DEFAULT/use_forwarded_for':              value => $use_forwarded_for;
-      'DEFAULT/neutron_metadata_proxy_secret':  value => $nuage_metadata_proxy_shared_secret;
-      'DEFAULT/instance_name_template':         value => $instance_name_template;
-    }
-  }
   # Disable twice logging if syslog is enabled
   if $use_syslog {
     $log_dir = false
